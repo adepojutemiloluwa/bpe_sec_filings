@@ -1,0 +1,5 @@
+# SEC-BPE Requirements
+# Python 3.13+
+
+# Testing
+pytest>=8.0.0
