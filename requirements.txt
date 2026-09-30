@@ -3,3 +3,6 @@
 
 # Testing
 pytest>=8.0.0
+
+# Stage 2 preprocessing uses only Python standard library
+# No external dependencies required for encoding, HTML cleaning, XBRL handling, etc.
