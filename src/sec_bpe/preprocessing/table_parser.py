@@ -23,15 +23,17 @@ class TableParser:
         if not text:
             return text
 
-        # Find all table elements
+        # Find and replace all table elements
         table_pattern = r'<table[^>]*>(.*?)</table>'
-        tables = re.findall(table_pattern, text, re.DOTALL | re.IGNORECASE)
-        self.table_count = len(tables)
-
-        # Replace each table with its serialized version
-        for table in tables:
-            serialized = self._serialize_table(table)
-            text = text.replace(f'<table{table}</table>', serialized, 1)
+        
+        def replace_table(match):
+            """Replace a table match with serialized content."""
+            table_content = match.group(1)
+            serialized = self._serialize_table(table_content)
+            self.table_count += 1
+            return serialized
+        
+        text = re.sub(table_pattern, replace_table, text, flags=re.DOTALL | re.IGNORECASE)
 
         return text
 
