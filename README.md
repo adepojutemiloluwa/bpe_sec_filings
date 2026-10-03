@@ -42,27 +42,47 @@ document_count = builder.build()
 print(f"Added {document_count} documents")
 ```
 
-### Stage 2: SEC Filing Cleaning and Normalization
+### Stage 3: BPE Corpus Preparation
 
 ```bash
-python scripts/prepare_corpus.py --input-dir data/processed --output-dir data/cleaned
+python scripts/prepare_bpe_corpus.py --input-dir data/cleaned --output-dir data/prepared
 ```
 
 Or programmatically:
 
 ```python
-from sec_bpe.preprocessing.corpus_builder import CleanedCorpusBuilder
+from sec_bpe.corpus.config import CorpusPreparationConfig
+from sec_bpe.corpus.preparer import CorpusPreparer
 
-builder = CleanedCorpusBuilder(
-    input_dir="data/processed",
-    output_dir="data/cleaned",
+config = CorpusPreparationConfig(
+    split_strategy="company",
+    train_ratio=0.80,
+    validation_ratio=0.10,
+    test_ratio=0.10,
+    seed=42,
 )
 
-stats = builder.build()
-print(f"Cleaned {stats['documents_cleaned']} documents")
-print(f"Removed {stats['html_elements_removed']} HTML elements")
-print(f"Detected {stats['duplicates_detected']} duplicates")
+preparer = CorpusPreparer("data/cleaned", "data/prepared", config)
+report = preparer.prepare()
 ```
+
+**Stage 3 Features:**
+- Document-level loading and validation from Stage 2 output
+- Multiple split strategies (company-aware, document-level, temporal)
+- Leakage-free train/validation/test splits
+- Deterministic splitting with configurable seed
+- Comprehensive corpus statistics (characters, bytes, document lengths)
+- Financial pattern analysis
+- Reproducible split manifests
+- Document boundary handling for BPE training
+- Case and punctuation preservation (configurable)
+
+**Output Files:**
+- `train.txt`, `validation.txt`, `test.txt` - Split text corpora
+- `train_metadata.jsonl`, `validation_metadata.jsonl`, `test_metadata.jsonl` - Per-split metadata
+- `corpus_statistics.json` - Character, byte, and document statistics
+- `split_manifest.json` - Reproducible split assignments
+- `preparation_report.json` - Preparation summary and configuration
 
 ## Development Status
 
@@ -87,8 +107,19 @@ print(f"Detected {stats['duplicates_detected']} duplicates")
   - Metadata preservation (JSONL)
   - Validation checks (boundaries, encoding, financial patterns)
 
-- **Stage 3**: BPE implementation (pending)
-- **Stage 4**: Benchmarking (pending)
+- **Stage 3**: BPE corpus preparation ✓
+  - Document loading and validation from Stage 2 output
+  - Multiple split strategies (company, document, temporal)
+  - Leakage-free train/validation/test splits
+  - Deterministic splitting with configurable seed
+  - Comprehensive corpus statistics
+  - Financial pattern analysis
+  - Reproducible split manifests
+  - Document boundary handling for BPE training
+  - Case and punctuation preservation
+
+- **Stage 4**: BPE implementation (pending)
+- **Stage 5**: Benchmarking (pending)
 
 ## License
 
