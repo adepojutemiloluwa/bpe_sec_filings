@@ -42,47 +42,59 @@ document_count = builder.build()
 print(f"Added {document_count} documents")
 ```
 
-### Stage 3: BPE Corpus Preparation
+### Stage 4: BPE Tokenizer Training
 
 ```bash
-python scripts/prepare_bpe_corpus.py --input-dir data/cleaned --output-dir data/prepared
+python scripts/train_bpe.py \
+    --input data/prepared/train.txt \
+    --output artifacts/tokenizer/sec_bpe_v1 \
+    --vocab-size 8192 \
+    --min-frequency 2
 ```
 
 Or programmatically:
 
 ```python
-from sec_bpe.corpus.config import CorpusPreparationConfig
-from sec_bpe.corpus.preparer import CorpusPreparer
+from sec_bpe.tokenizer.config import BPEConfig
+from sec_bpe.tokenizer.reference_trainer import ReferenceBPETrainer
+from sec_bpe.tokenizer.tokenizer import BPETokenizer
 
-config = CorpusPreparationConfig(
-    split_strategy="company",
-    train_ratio=0.80,
-    validation_ratio=0.10,
-    test_ratio=0.10,
-    seed=42,
+config = BPEConfig(
+    vocab_size=8192,
+    min_frequency=2,
 )
 
-preparer = CorpusPreparer("data/cleaned", "data/prepared", config)
-report = preparer.prepare()
+trainer = ReferenceBPETrainer(config)
+trainer.load_corpus("data/prepared/train.txt")
+vocabulary, merge_table = trainer.train()
+
+tokenizer = BPETokenizer(config=config, vocabulary=vocabulary, merge_table=merge_table)
+tokenizer.save("artifacts/tokenizer/sec_bpe_v1")
+
+# Use the tokenizer
+ids = tokenizer.encode("Revenue increased by 10%.")
+text = tokenizer.decode(ids)
 ```
 
-**Stage 3 Features:**
-- Document-level loading and validation from Stage 2 output
-- Multiple split strategies (company-aware, document-level, temporal)
-- Leakage-free train/validation/test splits
-- Deterministic splitting with configurable seed
-- Comprehensive corpus statistics (characters, bytes, document lengths)
-- Financial pattern analysis
-- Reproducible split manifests
-- Document boundary handling for BPE training
-- Case and punctuation preservation (configurable)
+**Stage 4 Features:**
+- Byte-level BPE implementation (no character-level assumptions)
+- 256 base byte vocabulary + special tokens
+- Deterministic pair selection with explicit tie-breaking
+- Document boundary respect (no cross-document merges)
+- Special token handling (`<DOCUMENT_START>`, `<DOCUMENT_END>`, `<UNK>`)
+- Round-trip encoding/decoding (decode(encode(text)) == text)
+- Comprehensive training statistics
+- Artifact validation
+- Merge inspection for learned patterns
+- Configurable vocabulary size and minimum frequency
 
 **Output Files:**
-- `train.txt`, `validation.txt`, `test.txt` - Split text corpora
-- `train_metadata.jsonl`, `validation_metadata.jsonl`, `test_metadata.jsonl` - Per-split metadata
-- `corpus_statistics.json` - Character, byte, and document statistics
-- `split_manifest.json` - Reproducible split assignments
-- `preparation_report.json` - Preparation summary and configuration
+- `vocab.json` - Vocabulary with byte sequences
+- `merges.json` - Ordered merge rules with frequencies
+- `config.json` - Training configuration
+- `tokenizer.json` - Tokenizer metadata
+- `statistics.json` - Training statistics
+- `training_metadata.json` - Corpus hash and training info
 
 ## Development Status
 
@@ -118,8 +130,20 @@ report = preparer.prepare()
   - Document boundary handling for BPE training
   - Case and punctuation preservation
 
-- **Stage 4**: BPE implementation (pending)
-- **Stage 5**: Benchmarking (pending)
+- **Stage 4**: BPE tokenizer training ✓
+  - Byte-level BPE implementation from scratch
+  - 256 base byte vocabulary
+  - Special token system
+  - Deterministic pair counting and selection
+  - Explicit tie-breaking rules
+  - Document boundary respect
+  - Round-trip encoding/decoding
+  - Training statistics and validation
+  - Artifact serialization
+  - Merge inspection
+
+- **Stage 5**: Tokenizer evaluation (pending)
+- **Stage 6**: Comparison against existing tokenizers (pending)
 
 ## License
 
