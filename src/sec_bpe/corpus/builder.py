@@ -28,7 +28,7 @@ class CorpusBuilder:
 
         Loads all documents from the input directory and combines them
         into a single output file. Each document is wrapped with
-        <document_start> and <document_end> markers.
+        <DOCUMENT_START> and <DOCUMENT_END> markers.
 
         Returns:
             Number of documents written to the corpus.
@@ -47,8 +47,8 @@ class CorpusBuilder:
             for i, doc in enumerate(documents):
                 if i > 0:
                     f.write("\n\n")
-                f.write("<document_start>\n")
+                f.write("<DOCUMENT_START>\n")
                 f.write(doc)
-                f.write("\n<document_end>")
+                f.write("\n<DOCUMENT_END>")
 
         return len(documents)

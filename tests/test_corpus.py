@@ -143,8 +143,8 @@ class TestCorpusBuilder:
             
             # Verify content
             corpus_content = output_path.read_text()
-            assert "<document_start>" in corpus_content
-            assert "<document_end>" in corpus_content
+            assert "<DOCUMENT_START>" in corpus_content
+            assert "<DOCUMENT_END>" in corpus_content
             assert "Document 1 content" in corpus_content
             assert "<html>Document 2</html>" in corpus_content
             assert "<html>Document 3</html>" in corpus_content
@@ -168,7 +168,7 @@ class TestCorpusBuilder:
             corpus_content = output_path.read_text()
             
             # Documents should be separated with markers
-            expected = "<document_start>\nDOC1\n<document_end>\n\n<document_start>\nDOC2\n<document_end>"
+            expected = "<DOCUMENT_START>\nDOC1\n<DOCUMENT_END>\n\n<DOCUMENT_START>\nDOC2\n<DOCUMENT_END>"
             assert corpus_content == expected
 
     def test_output_directory_creation(self):
@@ -204,7 +204,7 @@ class TestCorpusBuilder:
             count = builder.build()
             
             assert count == 1
-            expected = "<document_start>\nSingle document\n<document_end>"
+            expected = "<DOCUMENT_START>\nSingle document\n<DOCUMENT_END>"
             assert output_path.read_text() == expected
 
     def test_no_supported_files_error(self):
@@ -254,8 +254,8 @@ class TestCorpusBuilder:
             corpus_content = output_path.read_text()
             
             # Verify raw content is preserved with markers
-            assert "<document_start>" in corpus_content
-            assert "<document_end>" in corpus_content
+            assert "<DOCUMENT_START>" in corpus_content
+            assert "<DOCUMENT_END>" in corpus_content
             assert "<html>" in corpus_content
             assert "<table>" in corpus_content
             assert "123.45" in corpus_content
