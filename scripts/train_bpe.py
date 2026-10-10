@@ -113,6 +113,9 @@ def main() -> int:
         # Load corpus
         trainer.load_corpus(input_path)
 
+        # Calculate initial token count from loaded documents
+        initial_token_count = sum(len(doc) for doc in trainer.documents)
+
         # Record initial statistics
         stats = TrainingStatistics()
         corpus_bytes = input_path.stat().st_size
@@ -122,12 +125,17 @@ def main() -> int:
             num_documents=len(trainer.documents),
             corpus_bytes=corpus_bytes,
             corpus_characters=len(corpus_chars),
-            token_count=trainer.initial_token_count,
+            token_count=initial_token_count,
         )
 
         # Train
         logger.info("Starting BPE training...")
         vocabulary, merge_table = trainer.train()
+
+        # Record merge frequencies from merge table
+        for rank in range(merge_table.size()):
+            merge = merge_table.get_merge(rank)
+            stats.record_merge(frequency=merge.frequency)
 
         # Record final statistics
         stats.record_final_state(
@@ -150,7 +158,7 @@ def main() -> int:
         serializer.save_training_metadata(
             output_path,
             input_path,
-            trainer.initial_token_count,
+            initial_token_count,
             trainer.final_token_count,
         )
 
@@ -177,9 +185,9 @@ def main() -> int:
         logger.info("=" * 60)
         logger.info("Training Summary:")
         logger.info(f"  Documents processed: {len(trainer.documents)}")
-        logger.info(f"  Initial tokens: {trainer.initial_token_count:,}")
+        logger.info(f"  Initial tokens: {initial_token_count:,}")
         logger.info(f"  Final tokens: {trainer.final_token_count:,}")
-        logger.info(f"  Compression ratio: {trainer.initial_token_count / trainer.final_token_count:.2f}")
+        logger.info(f"  Compression ratio: {initial_token_count / trainer.final_token_count:.2f}")
         logger.info(f"  Vocabulary size: {vocabulary.size()}")
         logger.info(f"  Merges learned: {merge_table.size()}")
         logger.info("=" * 60)
