@@ -32,15 +32,33 @@ pip install -e .
 
 ```python
 from sec_bpe.corpus.builder import CorpusBuilder
+from sec_bpe.corpus.ingestion_config import IngestionConfig
+
+# Configure ingestion (optional)
+config = IngestionConfig(
+    extract_zip=True,  # Enable ZIP archive extraction
+    max_extracted_file_size=100 * 1024 * 1024,  # 100 MB per file
+    max_total_extracted_size=1024 * 1024 * 1024,  # 1 GB total
+    extract_dir="_extracted",  # Extraction subdirectory
+)
 
 builder = CorpusBuilder(
     input_dir="data/raw",
     output_path="data/processed/sec_corpus.txt",
+    config=config,  # Optional: defaults to extract_zip=False
 )
 
 document_count = builder.build()
 print(f"Added {document_count} documents")
 ```
+
+**ZIP Archive Extraction:**
+- Set `extract_zip=True` to automatically extract ZIP archives before processing
+- Extracted files are placed in `{input_dir}/_extracted/{archive_name}/`
+- Original ZIP files are preserved
+- Extraction is tracked via manifest to avoid re-extracting unchanged archives
+- Safety features: path traversal protection, file size limits, ZIP bomb detection
+- When `extract_zip=False` (default), ZIP files are skipped and only regular files are processed
 
 ### Stage 4: BPE Tokenizer Training
 

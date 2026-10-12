@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from sec_bpe.corpus.loader import CorpusLoader
+from sec_bpe.corpus.ingestion_config import IngestionConfig
 
 
 class CorpusBuilder:
@@ -12,16 +13,19 @@ class CorpusBuilder:
         self,
         input_dir: str | Path,
         output_path: str | Path,
+        config: IngestionConfig = None,
     ):
         """Initialize the corpus builder.
 
         Args:
             input_dir: Directory containing SEC filing documents.
             output_path: Path where the combined corpus file will be written.
+            config: Ingestion configuration (optional).
         """
         self.input_dir = Path(input_dir)
         self.output_path = Path(output_path)
-        self.loader = CorpusLoader(input_dir)
+        self.config = config or IngestionConfig()
+        self.loader = CorpusLoader(input_dir, self.config)
 
     def build(self) -> int:
         """Build the corpus file from all supported documents.
