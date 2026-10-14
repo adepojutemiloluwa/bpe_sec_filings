@@ -1,4 +1,4 @@
-# SEC-BPE
+# SEC-BPE-TOKENIZER
 
 A production-quality, reusable Python tokenizer for SEC Form 10-K filings.
 
